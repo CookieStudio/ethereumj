@@ -478,61 +478,6 @@ public class ImportLightTest {
         Assert.assertEquals(BigInteger.valueOf(222222), b.callConstFunction(b2_, "call")[0]);
     }
 
-    @Test
-    public void operateNotExistingContractTest() throws IOException, InterruptedException {
-        // checking that addr.balance doesn't cause the account to be created
-        // and the subsequent call to that non-existent address costs 25K gas
-        byte[] addr = Hex.decode("0101010101010101010101010101010101010101");
-        String contractA =
-                "pragma solidity ^0.4.3;" +
-                "contract B { function dummy() {}}" +
-                "contract A {" +
-                "  function callBalance() returns (uint) {" +
-                "    address addr = 0x" + Hex.toHexString(addr) + ";" +
-                "    uint bal = addr.balance;" +
-                "  }" +
-                "  function callMethod() returns (uint) {" +
-                "    address addr = 0x" + Hex.toHexString(addr) + ";" +
-                "    B b = B(addr);" +
-                "    b.dummy();" +
-                "  }" +
-                "}";
-
-        StandaloneBlockchain bc = new StandaloneBlockchain()
-                .withGasPrice(1)
-                .withGasLimit(5_000_000L);
-        SolidityContract a = bc.submitNewContract(contractA, "A");
-        bc.createBlock();
-
-        {
-            BigInteger balance1 = getSenderBalance(bc);
-            a.callFunction("callBalance");
-            bc.createBlock();
-            BigInteger balance2 = getSenderBalance(bc);
-            long spent = balance1.subtract(balance2).longValue();
-
-            // checking balance of not existed address should take
-            // less that gas limit
-            Assert.assertTrue(spent < 100_000);
-        }
-
-        {
-            BigInteger balance1 = getSenderBalance(bc);
-            a.callFunction("callMethod");
-            bc.createBlock();
-            BigInteger balance2 = getSenderBalance(bc);
-            long spent = balance1.subtract(balance2).longValue();
-
-            // invalid jump error occurred
-            // all gas wasted
-            // (for history: it is worked fine in ^0.3.1)
-            // Assert.assertEquals(5_000_000L, spent);
-
-            // FIX for 0.4.25 and apparently some earlier versions
-            Assert.assertTrue(spent < 100_000);
-        }
-    }
-
     private BigInteger getSenderBalance(StandaloneBlockchain bc) {
         return bc.getBlockchain().getRepository().getBalance(bc.getSender().getAddress());
     }
