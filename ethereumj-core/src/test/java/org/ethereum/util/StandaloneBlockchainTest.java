@@ -177,27 +177,4 @@ public class StandaloneBlockchainTest {
         assert convert(123, ETHER).compareTo(sb.getBlockchain().getRepository().getBalance(bob.getAddress())) > 0;
         assert aliceInitBal.add(BigInteger.ONE).equals(sb.getBlockchain().getRepository().getBalance(alice.getAddress()));
     }
-
-    @Test
-    public void addContractWithMetadataEvent() throws Exception {
-        String contract = "contract A {" +
-                "  event Event(uint aaa);" +
-                "  function f(uint a) {emit Event(a); }" +
-                "}";
-        SolidityCompiler.Result result = SolidityCompiler.getInstance().compileSrc(
-                contract.getBytes(), false, true,
-                SolidityCompiler.Options.ABI, SolidityCompiler.Options.BIN);
-        CompilationResult cresult = CompilationResult.parse(result.output);
-        CompilationResult.ContractMetadata contractMetadata = new CompilationResult.ContractMetadata();
-        contractMetadata.abi = cresult.getContracts().get(0).abi;
-        contractMetadata.bin = cresult.getContracts().get(0).bin;
-
-        StandaloneBlockchain sb = new StandaloneBlockchain().withAutoblock(true);
-
-        SolidityContract newContract = sb.submitNewContract(contractMetadata);
-        SolidityCallResult res = newContract.callFunction("f", 123);
-        Assert.assertEquals(1, res.getEvents().size());
-        Assert.assertEquals("Event", res.getEvents().get(0).function.name);
-        Assert.assertEquals(BigInteger.valueOf(123), res.getEvents().get(0).args[0]);
-    }
 }
