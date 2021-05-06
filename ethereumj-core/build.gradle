@@ -128,9 +128,9 @@ dependencies {
 
     compile "org.ethereum:leveldbjni-all:1.18.3"             // native leveldb components
 
-    compile "org.ethereum:rocksdbjni:5.9.2"                   // RocksDB Java API
+    compile ""org.rocksdb:rocksdbjni:6.1.1""                   // RocksDB Java API
 
-    compile "org.ethereum:solcJ-all:0.4.25"                  // Solidity Compiler win/mac/linux binaries
+    compile "com.github.ether-camp:solcJ:v0.4.7"                  // Solidity Compiler win/mac/linux binaries
 
     compile "com.google.guava:guava:24.1-jre"
 
